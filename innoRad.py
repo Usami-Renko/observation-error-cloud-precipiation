@@ -3,7 +3,7 @@ Description: class to Perform QC, observation error statistics
 Author: Hejun Xie
 Date: 2022-04-09 21:08:27
 LastEditors: Hejun Xie
-LastEditTime: 2022-04-20 21:55:43
+LastEditTime: 2022-04-23 16:57:01
 '''
 import logging
 import os
@@ -43,6 +43,56 @@ def find_expsfit(perc_segs, percentiles, values):
         bases.append((perc_range[0] + perc_range[1]) / 2.0)
 
     return popts, perc_ranges, perc_slices, value_segs, bases
+
+def output_rescalingCoefficient(outfile, \
+    perc_segs_B, value_segs_B, bases_B, popts_B, \
+    perc_segs_O, value_segs_O, bases_O, popts_O):
+    
+    def get_1darray_format(nvalues):
+        ncolumns = 5
+        singleformat = '{:<+14.6e}'
+        nlines = nvalues // ncolumns
+        modcolumns = nvalues % ncolumns
+        formatstr = (ncolumns * singleformat + '\n') * nlines + \
+            (modcolumns * singleformat + '\n' if modcolumns else '')
+        return formatstr
+
+
+    with open(outfile, 'w') as fout:
+        fout.write('! Rescaling Coefficient Data\n')
+        fout.write('! 1. Simulation\n')
+        fout.write('! nsegs\n')
+        nsegs = len(bases_B)
+        fout.write('{}\n'.format(nsegs))
+        fout.write('! perc_segs\n')
+        fout.write(get_1darray_format(nsegs+1).format(*perc_segs_B))
+        fout.write('! value_segs\n')
+        fout.write(get_1darray_format(2*nsegs).format(*value_segs_B))
+        fout.write('! bases\n')
+        fout.write(get_1darray_format(nsegs).format(*bases_B))
+        fout.write('! a\n')
+        fout.write(get_1darray_format(nsegs).format(*[popt[0] for popt in popts_B]))
+        fout.write('! b\n')
+        fout.write(get_1darray_format(nsegs).format(*[popt[1] for popt in popts_B]))
+        fout.write('! c\n')
+        fout.write(get_1darray_format(nsegs).format(*[popt[2] for popt in popts_B]))
+
+        fout.write('! 1. Observation\n')
+        fout.write('! nsegs\n')
+        nsegs = len(bases_O)
+        fout.write('{}\n'.format(nsegs))
+        fout.write('! perc_segs\n')
+        fout.write(get_1darray_format(nsegs+1).format(*perc_segs_O))
+        fout.write('! value_segs\n')
+        fout.write(get_1darray_format(2*nsegs).format(*value_segs_O))
+        fout.write('! bases\n')
+        fout.write(get_1darray_format(nsegs).format(*bases_O))
+        fout.write('! a\n')
+        fout.write(get_1darray_format(nsegs).format(*[popt[0] for popt in popts_O]))
+        fout.write('! b\n')
+        fout.write(get_1darray_format(nsegs).format(*[popt[1] for popt in popts_O]))
+        fout.write('! c\n')
+        fout.write(get_1darray_format(nsegs).format(*[popt[2] for popt in popts_O]))
 
 class innoRad(object):
     '''
@@ -907,6 +957,7 @@ class innoRad(object):
         online_coeff_region = 'Tropical'
         perc_segs_B = [0., .5, 5., 60., 80., 90., 95., 99., 99.9, 100.]
         popts_B, perc_ranges_B, perc_slices_B, value_segs_B, bases_B = find_expsfit(perc_segs_B, percentiles, C37_B_perc)
+        # perc_segs_O = [0., 2.5, 5., 10., 20., 40., 70., 90., 95., 100.]
         perc_segs_O = [0., 2.5, 5., 10., 20., 40., 70., 85., 92., 96., 99., 100.]
         popts_O, perc_ranges_O, perc_slices_O, value_segs_O, bases_O = find_expsfit(perc_segs_O, percentiles, C37_O_perc)
         # np.set_printoptions(formatter={'float': '{:+.6e}'.format}) # output coefficient in terminal
@@ -914,6 +965,11 @@ class innoRad(object):
         # print(np.array(value_segs_O))
         # print(np.array(bases_O))
         # print(popts_O)
+        # exit()
+
+        # output_rescalingCoefficient('c37rescaling_extratropical.dat', \
+        #     perc_segs_B, value_segs_B, bases_B, popts_B, \
+        #     perc_segs_O, value_segs_O, bases_O, popts_O)
         # exit()
 
         '''

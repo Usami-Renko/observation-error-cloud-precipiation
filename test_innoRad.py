@@ -3,7 +3,7 @@ Description: test
 Author: Hejun Xie
 Date: 2022-04-07 19:12:11
 LastEditors: Hejun Xie
-LastEditTime: 2022-04-20 22:11:27
+LastEditTime: 2022-04-23 16:58:00
 '''
 
 import glob
@@ -44,9 +44,9 @@ if __name__ == '__main__':
     '''
     2. Time slots select
     '''    
-    innoRad_ds.merge_data(startSlot='202107190300', endSlot='202107220300')
+    # innoRad_ds.merge_data(startSlot='202107190300', endSlot='202107220300')
     # innoRad_ds.merge_data(startSlot='202107180300', endSlot='202107220300')
-    # innoRad_ds.merge_data()
+    innoRad_ds.merge_data()
 
     '''
     3.1 OMB distribution
