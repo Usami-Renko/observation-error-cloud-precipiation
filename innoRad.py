@@ -3,7 +3,7 @@ Description: class to Perform QC, observation error statistics
 Author: Hejun Xie
 Date: 2022-04-09 21:08:27
 LastEditors: Hejun Xie
-LastEditTime: 2022-04-23 16:57:01
+LastEditTime: 2022-04-24 19:53:28
 '''
 import logging
 import os
@@ -976,8 +976,8 @@ class innoRad(object):
         Get fit parameters here (offline)
         '''     
         from obs_err import rescale_B2O, percentiles2Values, values2Percentiles
-        # test_region = 'Extra-tropical' # can be ['Global', 'Tropical', 'Extra-tropical']
-        # print(rescale_B2O([-0.1, 0.0, 0.001, 0.1, 0.2, 0.3, 0.8, 1.0, 1.1], region=test_region))
+        # test_region = 'Global' # can be ['Global', 'Tropical', 'Extra-tropical']
+        # print(rescale_B2O([-0.1, 0.0, 0.001, 0.003, 0.01, 0.1, 0.2, 0.3, 0.8, 1.0, 1.1], region=test_region))
         # exit()
 
         '''

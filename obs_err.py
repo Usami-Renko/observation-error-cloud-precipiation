@@ -4,7 +4,7 @@ Description: place observation error configuration data here
 Author: Hejun Xie
 Date: 2022-04-18 19:41:05
 LastEditors: Hejun Xie
-LastEditTime: 2022-04-19 21:48:10
+LastEditTime: 2022-04-24 19:45:52
 '''
 
 import numpy as np
@@ -240,8 +240,10 @@ def values2Percentiles(values, value_segs, popts, bases):
     # if value lies in gap of segmented function
     for igap in range(len(value_segs)//2 - 1):
         Gap = (value_segs[igap*2+1], value_segs[igap*2+2])
+        a, b, c = popts[igap]
+        base = bases[igap]
         percentiles = np.where((values>=Gap[0]) & (values<=Gap[1]), \
-            (Gap[0]+Gap[1])/2., percentiles)
+            inverse_exp(Gap[0], a, b, c, base), percentiles)
 
     percentiles = np.clip(percentiles, 0., 100.) # clip output
     return percentiles
