@@ -3,7 +3,7 @@ Description: test
 Author: Hejun Xie
 Date: 2022-04-07 19:12:11
 LastEditors: Hejun Xie
-LastEditTime: 2022-04-24 19:53:21
+LastEditTime: 2022-05-13 20:37:54
 '''
 
 import glob
@@ -100,10 +100,10 @@ if __name__ == '__main__':
     '''
     3.7 Nomalized OMB distribution
     '''
-    # for ich in range(0, 10):
-    #     innoRad_ds.plot_normalized_OMB(ich, 'ch{}_normed_OMB_pdf.png'.format(ich), OMBkey='OMB_BC_sct', 
-    #         c37keys=['c37_symme*', 'c37_model*'], c37Colors=['r', 'b'], 
-    #         c37Labels=[r'$\overline{C37}\ast$',r'$C37^{B}\ast$'])
+    for ich in range(0, 10):
+        innoRad_ds.plot_normalized_OMB(ich, 'ch{}_normed_OMB_pdf.png'.format(ich), OMBkey='OMB_BC_sct', 
+            c37keys=['c37_symme*', 'c37_model*'], c37Colors=['r', 'b'], 
+            c37Labels=[r'$\overline{C37}\ast$',r'$C37^{B}\ast$'])
 
     '''
     3.8 Plot BgQC

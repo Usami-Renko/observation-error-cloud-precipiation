@@ -3,7 +3,7 @@ Description: class to Perform QC, observation error statistics
 Author: Hejun Xie
 Date: 2022-04-09 21:08:27
 LastEditors: Hejun Xie
-LastEditTime: 2022-04-24 19:53:28
+LastEditTime: 2022-05-13 20:41:50
 '''
 import logging
 import os
@@ -44,55 +44,6 @@ def find_expsfit(perc_segs, percentiles, values):
 
     return popts, perc_ranges, perc_slices, value_segs, bases
 
-def output_rescalingCoefficient(outfile, \
-    perc_segs_B, value_segs_B, bases_B, popts_B, \
-    perc_segs_O, value_segs_O, bases_O, popts_O):
-    
-    def get_1darray_format(nvalues):
-        ncolumns = 5
-        singleformat = '{:<+14.6e}'
-        nlines = nvalues // ncolumns
-        modcolumns = nvalues % ncolumns
-        formatstr = (ncolumns * singleformat + '\n') * nlines + \
-            (modcolumns * singleformat + '\n' if modcolumns else '')
-        return formatstr
-
-
-    with open(outfile, 'w') as fout:
-        fout.write('! Rescaling Coefficient Data\n')
-        fout.write('! 1. Simulation\n')
-        fout.write('! nsegs\n')
-        nsegs = len(bases_B)
-        fout.write('{}\n'.format(nsegs))
-        fout.write('! perc_segs\n')
-        fout.write(get_1darray_format(nsegs+1).format(*perc_segs_B))
-        fout.write('! value_segs\n')
-        fout.write(get_1darray_format(2*nsegs).format(*value_segs_B))
-        fout.write('! bases\n')
-        fout.write(get_1darray_format(nsegs).format(*bases_B))
-        fout.write('! a\n')
-        fout.write(get_1darray_format(nsegs).format(*[popt[0] for popt in popts_B]))
-        fout.write('! b\n')
-        fout.write(get_1darray_format(nsegs).format(*[popt[1] for popt in popts_B]))
-        fout.write('! c\n')
-        fout.write(get_1darray_format(nsegs).format(*[popt[2] for popt in popts_B]))
-
-        fout.write('! 1. Observation\n')
-        fout.write('! nsegs\n')
-        nsegs = len(bases_O)
-        fout.write('{}\n'.format(nsegs))
-        fout.write('! perc_segs\n')
-        fout.write(get_1darray_format(nsegs+1).format(*perc_segs_O))
-        fout.write('! value_segs\n')
-        fout.write(get_1darray_format(2*nsegs).format(*value_segs_O))
-        fout.write('! bases\n')
-        fout.write(get_1darray_format(nsegs).format(*bases_O))
-        fout.write('! a\n')
-        fout.write(get_1darray_format(nsegs).format(*[popt[0] for popt in popts_O]))
-        fout.write('! b\n')
-        fout.write(get_1darray_format(nsegs).format(*[popt[1] for popt in popts_O]))
-        fout.write('! c\n')
-        fout.write(get_1darray_format(nsegs).format(*[popt[2] for popt in popts_O]))
 
 class innoRad(object):
     '''
@@ -339,7 +290,7 @@ class innoRad(object):
             C37_model = np.clip(C37_model, -0.1, 1.0)
             C37_obser = np.clip(C37_obser, -0.1, 1.0)
 
-            from obs_err import rescale_B2O
+            from obs_err_new import rescale_B2O
             if rescale == 'mono':
                 C37_model_rescaled = rescale_B2O(C37_model, region='Global')
             elif rescale == 'bi':
@@ -872,15 +823,19 @@ class innoRad(object):
         Cclr = 0.0
         Ccld = c37binCenter[np.argmax(std_c37symme)]
         reg_slice = get_slice(c37binCenter, [Cclr, Ccld])
-        result = stats.linregress(c37binCenter[reg_slice], y=std_c37symme[reg_slice])
-        slope, intercept, rvalue, pvalue, stderr = result
+        # result = stats.linregress(c37binCenter[reg_slice], y=std_c37symme[reg_slice])
+        # slope, intercept, rvalue, pvalue, stderr = result
+        intercept = std_c37symme[reg_slice.start] # at Cclr
+        slope = np.max( (std_c37symme[reg_slice] - intercept) / (c37binCenter[reg_slice] - Cclr) ) 
+        Ccld = Cclr + (std_c37symme[reg_slice.stop-1] - intercept) / slope # update Ccld
+        
         k = slope
         gclr = intercept
         gcld = intercept + slope * Ccld
 
         axes[0][1].hlines(y=gcld, xmin=Ccld, xmax=c37bins[-1], colors='k', ls='-.', lw=1.5)
         axes[0][1].hlines(y=gclr, xmin=c37bins[0], xmax=Cclr,  colors='k', ls='-.', lw=1.5)
-        axes[0][1].plot(c37binCenter[reg_slice], c37binCenter[reg_slice] * slope + intercept, color='k', ls='-.', lw=1.5)
+        axes[0][1].plot([Cclr, Ccld], [Cclr*slope + intercept, Ccld*slope + intercept], color='k', ls='-.', lw=1.5)
 
         ylim = axes[0][1].get_ylim()
         axes[0][1].vlines(x=Cclr, ymin=ylim[0], ymax=ylim[1],  colors='k', ls='--', lw=2.0)
@@ -955,7 +910,7 @@ class innoRad(object):
         '''
         online_coeff_region = 'Global'
         online_coeff_region = 'Tropical'
-        perc_segs_B = [0., .5, 5., 60., 80., 90., 95., 99., 99.9, 100.]
+        perc_segs_B = [0., .5, 5., 60., 80., 90., 95., 98., 99.5, 99.9, 100.]
         popts_B, perc_ranges_B, perc_slices_B, value_segs_B, bases_B = find_expsfit(perc_segs_B, percentiles, C37_B_perc)
         # perc_segs_O = [0., 2.5, 5., 10., 20., 40., 70., 90., 95., 100.]
         perc_segs_O = [0., 2.5, 5., 10., 20., 40., 70., 85., 92., 96., 99., 100.]
@@ -967,7 +922,8 @@ class innoRad(object):
         # print(popts_O)
         # exit()
 
-        # output_rescalingCoefficient('c37rescaling_extratropical.dat', \
+        # from obs_err_new import write_rescalingCoefficient
+        # write_rescalingCoefficient('c37rescaling_tropical.dat', \
         #     perc_segs_B, value_segs_B, bases_B, popts_B, \
         #     perc_segs_O, value_segs_O, bases_O, popts_O)
         # exit()
@@ -975,7 +931,7 @@ class innoRad(object):
         '''
         Get fit parameters here (offline)
         '''     
-        from obs_err import rescale_B2O, percentiles2Values, values2Percentiles
+        from obs_err_new import rescale_B2O, percentiles2Values, values2Percentiles
         # test_region = 'Global' # can be ['Global', 'Tropical', 'Extra-tropical']
         # print(rescale_B2O([-0.1, 0.0, 0.001, 0.003, 0.01, 0.1, 0.2, 0.3, 0.8, 1.0, 1.1], region=test_region))
         # exit()
@@ -1607,7 +1563,7 @@ class innoRad(object):
             ax.plot(binCenter, pdf_normalized, color=c37Color, ls='-', label='Normalized by ' + c37Label)        
         
         cornerText = get_channel_str(self.instrument, ch_no)
-        cornerTag(ax, cornerTag, 20.)
+        cornerTag(ax, cornerText, 20.)
         
         ax.set_ylim([1e-4, 2e0])
         ax.set_yscale('log')
