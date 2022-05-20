@@ -3,7 +3,7 @@ Description: test
 Author: Hejun Xie
 Date: 2022-04-07 19:12:11
 LastEditors: Hejun Xie
-LastEditTime: 2022-05-13 20:37:54
+LastEditTime: 2022-05-20 16:31:11
 '''
 
 import glob
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     2. Time slots select
     '''    
     # innoRad_ds.merge_data(startSlot='202107190300', endSlot='202107220300')
-    # innoRad_ds.merge_data(startSlot='202107180300', endSlot='202107220300')
+    # innoRad_ds.merge_data(startSlot='202107191500', endSlot='202107192100')
     innoRad_ds.merge_data()
 
     '''
@@ -109,5 +109,5 @@ if __name__ == '__main__':
     3.8 Plot BgQC
     '''
     # for ich in range(0, 10):
-    #     innoRad_ds.plot_BgQC(ich, 'ch{}_BgQC.png'.format(ich), thresh_sigma=1.5)
+    #     innoRad_ds.plot_BgQC(ich, 'ch{}_BgQC.png'.format(ich), thresh_sigma=2.0)
 
