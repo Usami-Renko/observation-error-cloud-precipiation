@@ -3,7 +3,7 @@ Description: Utilities for Innovation Brightness Temperature
 Author: Hejun Xie
 Date: 2022-04-07 19:03:32
 LastEditors: Hejun Xie
-LastEditTime: 2022-04-09 20:02:24
+LastEditTime: 2022-05-24 13:25:51
 '''
 
 import pandas as pd
@@ -42,17 +42,25 @@ def read_table(fin, num_rad):
         line = fin.readline()
         segs = line.split()
 
-        table['line'][irad]           = int(segs[0])
-        table['pos'][irad]            = int(segs[1])
-        table['lat'][irad]            = float(segs[2])
-        table['lon'][irad]            = float(segs[3])
-        table['Tb'][irad]             = float(segs[4])
-        table['Tb(xb)-Tb'][irad]      = float(segs[5])
-        table['Tb(xb)-Tb-Bias'][irad] = float(segs[6])
-        table['Bias'][irad]           = float(segs[7])
-        table['surf-height'][irad]    = int(segs[8])
-        table['surf-type'][irad]      = int(segs[9])
-        table['effecfrac'][irad]      = float(segs[10])
+        try:
+            table['line'][irad]           = int(segs[0])
+            table['pos'][irad]            = int(segs[1])
+            table['lat'][irad]            = float(segs[2])
+            table['lon'][irad]            = float(segs[3])
+            table['Tb'][irad]             = float(segs[4])
+            table['Tb(xb)-Tb'][irad]      = float(segs[5])
+            table['Tb(xb)-Tb-Bias'][irad] = float(segs[6])
+            table['Bias'][irad]           = float(segs[7])
+            table['surf-height'][irad]    = int(segs[8])
+            table['surf-type'][irad]      = int(segs[9])
+            table['effecfrac'][irad]      = float(segs[10])
+        except ValueError:
+            table['Tb'][irad]             = np.nan
+            table['Tb(xb)-Tb'][irad]      = np.nan
+            table['Tb(xb)-Tb-Bias'][irad] = np.nan
+            table['Bias'][irad]           = np.nan
+            table['effecfrac'][irad]      = np.nan
+            continue
 
         if table['Tb'][irad] < 0.0:
             table['Tb'][irad] = np.nan
@@ -60,11 +68,11 @@ def read_table(fin, num_rad):
             table['Tb(xb)-Tb-Bias'][irad] = np.nan
             table['Bias'][irad] = np.nan
         
-        table['B'] = table['Tb(xb)-Tb'] + table['Tb']
-        table['O'] = table['Tb']
-        table['OMB_RAW'] = - table['Tb(xb)-Tb']
-        table['OMB_BC'] = - table['Tb(xb)-Tb-Bias']
-        table['BC'] = - table['Bias']
+    table['B'] = table['Tb(xb)-Tb'] + table['Tb']
+    table['O'] = table['Tb']
+    table['OMB_RAW'] = - table['Tb(xb)-Tb']
+    table['OMB_BC'] = - table['Tb(xb)-Tb-Bias']
+    table['BC'] = - table['Bias']
 
     return table
 
